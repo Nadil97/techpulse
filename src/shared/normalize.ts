@@ -1,8 +1,9 @@
-import type { NewsItem } from "./types";
+import type { NewsItem } from './types';
 
-const canonical = (u: string) => u.replace(/(\?|#).*$/, "");
+const canonical = (u: string) => u.replace(/(\?|#).*$/, '');
 
 export function normalizeAndSort(items: NewsItem[]): NewsItem[] {
+  // De-dupe by canonical URL
   const uniq: Record<string, NewsItem> = {};
   for (const it of items) {
     const key = canonical(it.url || it.id);
@@ -10,6 +11,7 @@ export function normalizeAndSort(items: NewsItem[]): NewsItem[] {
   }
   const arr = Object.values(uniq);
 
+  // Sort: prefer HN points, then date desc
   return arr.sort((a, b) => {
     const ap = a.points ?? 0;
     const bp = b.points ?? 0;
