@@ -4,6 +4,8 @@ import NewsCard from "../../../presentation/Componants/NewsCard";
 import { fromHN, fromTechCrunch, fromTheVerge } from "../../../shared/fetchers";
 import { normalizeAndSort } from "../../../shared/normalize";
 import { ALL_CATEGORIES, Category, NewsItem, Source } from "../../../shared/types";
+import { useBookmarks } from "../../../shared/useBookmarks";
+import { bookmarkKey } from "../../../shared/bookmarkKey";
 
 type State = "idle" | "loading" | "ready" | "error";
 type SourceOption = Source | "all";
@@ -15,6 +17,9 @@ export const HomePage = () => {
   const [sourceFilter, setSourceFilter] = useState<SourceOption>("all");
   const [categoryFilter, setCategoryFilter] = useState<CategoryOption>("all");
   const [q, setQ] = useState("");
+  const [onlyBookmarks, setOnlyBookmarks] = useState(false);
+
+  const { bookmarks } = useBookmarks();
 
   useEffect(() => {
     let cancelled = false;
@@ -41,9 +46,7 @@ export const HomePage = () => {
         if (!cancelled) setState("error");
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = useMemo(() => {
@@ -51,9 +54,11 @@ export const HomePage = () => {
       const bySource = sourceFilter === "all" || i.source === sourceFilter;
       const byCategory = categoryFilter === "all" || i.categories.includes(categoryFilter);
       const byQuery = q.trim() ? i.title.toLowerCase().includes(q.toLowerCase()) : true;
-      return bySource && byCategory && byQuery;
+      const key = bookmarkKey(i);
+      const byBookmark = !onlyBookmarks || bookmarks.has(key) || bookmarks.has(String(i.id)); // legacy fallback
+      return bySource && byCategory && byQuery && byBookmark;
     });
-  }, [items, sourceFilter, categoryFilter, q]);
+  }, [items, sourceFilter, categoryFilter, q, onlyBookmarks, bookmarks]);
 
   const handleSourceChange = (s: SourceOption) => setSourceFilter(s);
   const handleCategoryChange = (c: string) => {
@@ -76,9 +81,23 @@ export const HomePage = () => {
       />
 
       <main className="container py-4">
-        <p className="text-muted mb-4">
-          Sources: TechCrunch · The Verge · Hacker News — client-only via RSS/API
-        </p>
+        <div className="d-flex align-items-center justify-content-between mb-3">
+          <p className="text-muted mb-0">
+            Sources: TechCrunch · The Verge · Hacker News — client-only via RSS/API
+          </p>
+
+          {/* Show Bookmarked toggle button (right side) */}
+          <button
+            type="button"
+            className={`btn btn-sm ${onlyBookmarks ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setOnlyBookmarks(v => !v)}
+            aria-pressed={onlyBookmarks}
+            title={onlyBookmarks ? "Show all stories" : "Show only bookmarked"}
+          >
+            <i className={`${onlyBookmarks ? "fa-solid" : "fa-regular"} fa-bookmark me-2`} />
+            {onlyBookmarks ? "Show All" : `Show Bookmarked${bookmarks.size ? ` (${bookmarks.size})` : ""}`}
+          </button>
+        </div>
 
         {state === "loading" && (
           <div className="row g-3" aria-live="polite">
