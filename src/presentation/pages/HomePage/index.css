@@ -1,18 +1,106 @@
-/* Ensure card titles truncate nicely on multiple lines */
-.card-title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* ===== Controls bar layout ===== */
+.controls-bar {
+  flex-wrap: nowrap;
+}
+.time-filter {
+  min-width: 140px;
 }
 
-/* Improve placeholder look if using skeletons */
-.placeholder {
-  display: inline-block;
-  height: 1rem;
-  background: var(--bs-light);
-  border-radius: 4px;
+/* ===== Bookmark pill toggle ===== */
+.bookmark-toggle {
+  --pill-border: var(--bs-border-color, rgba(0,0,0,.12));
+  --pill-bg: var(--bs-body-bg);
+  --pill-fg: var(--bs-body-color);
+  --pill-badge-bg: var(--bs-secondary-bg);
+  --pill-shadow: 0 6px 14px rgba(0,0,0,.12);
+
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  border: 1px solid var(--pill-border);
+  background: var(--pill-bg);
+  color: var(--pill-fg);
+  padding: .45rem .8rem;
+  border-radius: 999px;
+  line-height: 1;
+  font-size: .875rem;
+  font-weight: 500;
+  transition: background .2s ease, color .2s ease, border-color .2s ease,
+              box-shadow .2s ease, transform .08s ease;
 }
-.placeholder.col-12 { width: 100%; height: 0.9rem; }
-.placeholder.col-8 { width: 66%; height: 0.9rem; }
-.placeholder.col-6 { width: 50%; height: 1.2rem; }
+
+.bookmark-toggle .icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--pill-badge-bg);
+}
+
+.bookmark-toggle .count {
+  background: var(--pill-badge-bg);
+  border-radius: 999px;
+  padding: .2rem .5rem;
+  font-size: .75rem;
+  line-height: 1;
+}
+
+.bookmark-toggle:hover {
+  box-shadow: var(--pill-shadow);
+  transform: translateY(-1px);
+}
+
+.bookmark-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--bs-primary) 30%, transparent);
+}
+
+/* Active (pressed) state */
+.bookmark-toggle[aria-pressed="true"] {
+  --pill-border: color-mix(in oklab, var(--bs-primary) 45%, var(--bs-border-color));
+  color: var(--bs-primary);
+  background: color-mix(in oklab, var(--bs-primary) 10%, var(--bs-body-bg));
+}
+.bookmark-toggle[aria-pressed="true"] .icon {
+  background: color-mix(in oklab, var(--bs-primary) 18%, var(--bs-secondary-bg));
+  color: var(--bs-primary);
+}
+.bookmark-toggle[aria-pressed="true"] .count {
+  background: color-mix(in oklab, var(--bs-primary) 12%, var(--bs-secondary-bg));
+}
+
+/* Dark theme subtle tuning */
+[data-bs-theme="dark"] .bookmark-toggle {
+  --pill-border: rgba(255,255,255,.12);
+  --pill-badge-bg: rgba(255,255,255,.06);
+  --pill-shadow: 0 10px 22px rgba(0,0,0,.35);
+}
+
+/* ===== Responsive behavior ===== */
+@media (max-width: 576px) {
+  .controls-bar {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: .5rem;
+  }
+  .time-filter {
+    flex: 0 1 160px;
+    min-width: 0;
+  }
+  .bookmark-toggle {
+    width: 100%;
+    justify-content: center;
+    padding: .55rem .9rem;
+  }
+  .bookmark-toggle .label {
+    
+    display: none;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+  .bookmark-toggle .label {
+    display: inline;
+  }
+}
