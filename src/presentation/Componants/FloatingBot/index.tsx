@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./index.css";
+import { chatDirect, type Msg, type Role } from "../../../lib/chatDirect";
 
 type Message = { id: string; role: "bot" | "user"; text: string };
 
@@ -55,20 +56,63 @@ export default function FloatingBot({
     setMessages((m) => [...m, { id: `m${idRef.current++}`, role: "bot", text: t }]);
   };
 
-  const send = (value?: string) => {
-    const v = (value ?? text).trim();
-    if (!v) return;
-    setMessages((m) => [...m, { id: `m${idRef.current++}`, role: "user", text: v }]);
-    setText("");
+  // const send = (value?: string) => {
+  //   const v = (value ?? text).trim();
+  //   if (!v) return;
+  //   setMessages((m) => [...m, { id: `m${idRef.current++}`, role: "user", text: v }]);
+  //   setText("");
 
-    if (onSend) {
-      onSend(v, addBot);
-    } else {
-      // tiny mock reply so UI feels alive
-      setTimeout(() => addBot("Thanks! A teammate will reply shortly."), 450);
-    }
-  };
+  //   if (onSend) {
+  //     onSend(v, addBot);
+  //   } else {
+  //     // tiny mock reply so UI feels alive
+  //     setTimeout(() => addBot("Thanks! A teammate will reply shortly."), 450);
+  //   }
+  // };
 
+const send = async (value?: string) => {
+  const v = (value ?? text).trim();
+  if (!v) return;
+
+  setMessages((m) => [...m, { id: `m${idRef.current++}`, role: "user", text: v }]);
+  setText("");
+
+  try {
+    // turn your UI messages into API messages (typed!)
+    const history: Msg[] = messages.slice(-8).map((m): Msg => ({
+      role: (m.role === "bot" ? "assistant" : "user") as Role,
+      content: m.text,
+    }));
+
+    const system: Msg = {
+      role: "system",
+      content:
+        "You are Trend News Assistant. Be concise, friendly, and practical. If asked about pricing or contacting the team, give short next steps.",
+    };
+
+    const reply = await chatDirect([
+      system,
+      ...history,
+      { role: "user", content: v } as Msg, // narrow the literal
+    ]);
+
+    setMessages((m) => [
+      ...m,
+      { id: `m${idRef.current++}`, role: "bot", text: reply || "No reply." },
+    ]);
+  } catch (e: any) {
+    setMessages((m) => [
+      ...m,
+      {
+        id: `m${idRef.current++}`,
+        role: "bot",
+        text:
+          e?.message ||
+          "Sorry—couldn’t reach the chat service. Please try again in a moment.",
+      },
+    ]);
+  }
+};
   const icon = open ? "fa-solid fa-xmark" : "fa-solid fa-robot";
 
   return (

@@ -44,7 +44,7 @@ app.post("/api/chat", async (req, res) => {
 
     // Always add a compact system prompt to keep replies helpful + safe
     const systemPrompt =
-      "You are MechSIT Assistant. Be concise, friendly, and practical. If asked about pricing or contacting the team, provide short next-step instructions.";
+      "You are Trend News Assistant. Be concise, friendly, and practical. If asked about pricing or contacting the team, provide short next-step instructions.";
 
     const messages = [
       { role: "system", content: systemPrompt },
@@ -75,7 +75,7 @@ app.post("/api/chat", async (req, res) => {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
           // optional but recommended by OpenRouter:
           "HTTP-Referer": "http://localhost", // or your site
-          "X-Title": "MechSIT Assistant",
+          "X-Title": "Trend News Assistant",
         },
         body: JSON.stringify({ model, messages, temperature: 0.7 }),
       });

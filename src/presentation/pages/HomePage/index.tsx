@@ -283,7 +283,7 @@ export const HomePage = () => {
                     prompt: text,
                     
                     history: [
-                      { role: "system", content: "You are MechSIT Assistant." },
+                      { role: "system", content: "You are Trend News Assistant." },
                       
                     ],
                   }),
