@@ -14,6 +14,7 @@ import { useBookmarks } from "../../../shared/useBookmarks";
 import { bookmarkKey } from "../../../shared/bookmarkKey";
 import { analyzeSentiment, type Sentiment } from "../../../shared/sentiment";
 import "./index.css";
+import FloatingBot from "../../Componants/FloatingBot";
 
 type State = "idle" | "loading" | "ready" | "error";
 type SourceOption = Source | "all";
@@ -30,7 +31,7 @@ export const HomePage = () => {
   const [onlyBookmarks, setOnlyBookmarks] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [sentimentFilter, setSentimentFilter] = useState<SentimentFilter>("all");
-  const [showTrending, setShowTrending] = useState(false); // mobile toggle
+  const [showTrending, setShowTrending] = useState(false); 
 
   const { bookmarks } = useBookmarks();
 
@@ -268,6 +269,32 @@ export const HomePage = () => {
           </div>
         </div>
       </main>
+      <FloatingBot
+            title="News Assistant"
+            accent="#22c55e"
+            welcome="Hey! 👋 Need a hand?"
+            suggestions={["Our services", "Get a quote", "Support"]}
+            onSend={async (text, addBot) => {
+              try {
+                const resp = await fetch("http://localhost:8788/api/chat", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    prompt: text,
+                    
+                    history: [
+                      { role: "system", content: "You are MechSIT Assistant." },
+                      
+                    ],
+                  }),
+                });
+                const data = await resp.json();
+                addBot(data.reply || "Sorry, I couldn’t come up with an answer.");
+              } catch (e) {
+                addBot("Network error. Try again in a moment.");
+              }
+            }}
+          />
     </>
   );
 };
