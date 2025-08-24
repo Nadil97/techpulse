@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import TopNavBar from "../../../presentation/Componants/TopNavBar";
 import NewsCard from "../../../presentation/Componants/NewsCard";
 import TrendingPanel from "../../../presentation/Componants/TrendingPanel";
@@ -30,11 +30,28 @@ export const HomePage = () => {
   const [q, setQ] = useState("");
   const [onlyBookmarks, setOnlyBookmarks] = useState(false);
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
-  const [sentimentFilter, setSentimentFilter] = useState<SentimentFilter>("all");
-  const [showTrending, setShowTrending] = useState(false); 
- console.log("clicked",showTrending);
- console.log("clicked1",onlyBookmarks);
+  const [sentimentFilter, setSentimentFilter] =
+    useState<SentimentFilter>("all");
+  const [showTrending, setShowTrending] = useState(false);
   const { bookmarks } = useBookmarks();
+  const mobilePanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showTrending) return;
+    requestAnimationFrame(() => {
+      const el = mobilePanelRef.current;
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      try {
+        el.focus({ preventScroll: true });
+      } catch {}
+      setTimeout(() => {
+        const rect = el.getBoundingClientRect();
+        const top = rect.top + window.scrollY - 70;
+        window.scrollTo({ top, behavior: "smooth" });
+      }, 120);
+    });
+  }, [showTrending]);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,18 +78,28 @@ export const HomePage = () => {
         if (!cancelled) setState("error");
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Local-time boundary for time filtering
   const timeBoundary = useMemo(() => {
     const now = new Date();
     if (timeFilter === "today") {
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      return new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      ).getTime();
     }
     if (timeFilter === "week") {
       const day = (now.getDay() + 6) % 7; // Monday=0..Sunday=6
-      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day);
+      const start = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - day
+      );
       return start.getTime();
     }
     if (timeFilter === "month") {
@@ -85,8 +112,11 @@ export const HomePage = () => {
     const nowTs = Date.now();
     return items.filter((i) => {
       const bySource = sourceFilter === "all" || i.source === sourceFilter;
-      const byCategory = categoryFilter === "all" || i.categories.includes(categoryFilter);
-      const byQuery = q.trim() ? i.title.toLowerCase().includes(q.toLowerCase()) : true;
+      const byCategory =
+        categoryFilter === "all" || i.categories.includes(categoryFilter);
+      const byQuery = q.trim()
+        ? i.title.toLowerCase().includes(q.toLowerCase())
+        : true;
       const byBookmark = !onlyBookmarks || bookmarks.has(bookmarkKey(i));
 
       // sentiment
@@ -105,7 +135,9 @@ export const HomePage = () => {
         }
       }
 
-      return bySource && byCategory && byQuery && byBookmark && bySentiment && byTime;
+      return (
+        bySource && byCategory && byQuery && byBookmark && bySentiment && byTime
+      );
     });
   }, [
     items,
@@ -143,7 +175,8 @@ export const HomePage = () => {
         {/* Header controls */}
         <div className="d-flex align-items-center justify-content-between mb-3">
           <p className="text-muted mb-0">
-            Sources: TechCrunch · The Verge · Hacker News — client-only via RSS/API
+            Sources: TechCrunch · The Verge · Hacker News — client-only via
+            RSS/API
           </p>
 
           <div className="controls-bar d-flex align-items-center gap-2">
@@ -158,17 +191,16 @@ export const HomePage = () => {
             >
               <i className="fa-solid fa-chart-line me-1" /> Trending
             </button> */}
- <button
-  type="button"
-  className="btn btn-sm btn-outline-secondary d-lg-none"
-  onClick={() => setShowTrending(v => !v)}
-  aria-expanded={showTrending}
-  aria-controls="tp-mobile"           
-  title="Toggle trending panel"
->
-  <i className="fa-solid fa-chart-line me-1" /> Trending
-</button>
-
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-secondary d-lg-none"
+              onClick={() => setShowTrending((v) => !v)}
+              aria-expanded={showTrending}
+              aria-controls="tp-mobile"
+              title="Toggle trending panel"
+            >
+              <i className="fa-solid fa-chart-line me-1" /> Trending
+            </button>
 
             {/* Time filter */}
             <select
@@ -189,15 +221,23 @@ export const HomePage = () => {
               className="bookmark-toggle"
               onClick={() => setOnlyBookmarks((v) => !v)}
               aria-pressed={onlyBookmarks}
-              title={onlyBookmarks ? "Show all stories" : "Show only bookmarked"}
+              title={
+                onlyBookmarks ? "Show all stories" : "Show only bookmarked"
+              }
             >
               <span className="icon" aria-hidden="true">
-                <i className={`${onlyBookmarks ? "fa-solid" : "fa-regular"} fa-bookmark`} />
+                <i
+                  className={`${
+                    onlyBookmarks ? "fa-solid" : "fa-regular"
+                  } fa-bookmark`}
+                />
               </span>
               <span className="label">
                 {onlyBookmarks ? "Bookmarked" : "Show Bookmarked"}
               </span>
-              {bookmarks.size > 0 && <span className="count">{bookmarks.size}</span>}
+              {bookmarks.size > 0 && (
+                <span className="count">{bookmarks.size}</span>
+              )}
             </button>
           </div>
         </div>
@@ -253,12 +293,18 @@ export const HomePage = () => {
             {/* Desktop/tablet */}
             <div className="d-none d-lg-block">
               <TrendingPanel
-                items={filtered} 
+                items={filtered}
                 bookmarksCount={bookmarks.size}
-                activeCategory={categoryFilter === "all" ? "all" : (categoryFilter as string)}
-                activeSentiment={sentimentFilter === "all" ? "all" : (sentimentFilter as Sentiment)}
+                activeCategory={
+                  categoryFilter === "all" ? "all" : (categoryFilter as string)
+                }
+                activeSentiment={
+                  sentimentFilter === "all"
+                    ? "all"
+                    : (sentimentFilter as Sentiment)
+                }
                 query={q}
-                onPickCategory={(c) => handleCategoryChange(c)}              // "" clears to all
+                onPickCategory={(c) => handleCategoryChange(c)} // "" clears to all
                 onPickSentiment={(s) => setSentimentFilter(s)}
                 onQuery={(qv) => setQ(qv)}
               />
@@ -266,10 +312,47 @@ export const HomePage = () => {
 
             {/* Mobile collapsible */}
             {/* Mobile collapsible */}
-<div className="d-lg-none">
+            {/* <div className="d-lg-none">
+              <div
+                id="tp-mobile" // <-- new id
+                hidden={!showTrending} // <-- native toggle, no Bootstrap JS needed
+              >
+                <TrendingPanel
+                  items={filtered}
+                  bookmarksCount={bookmarks.size}
+                  activeCategory={
+                    categoryFilter === "all"
+                      ? "all"
+                      : (categoryFilter as string)
+                  }
+                  activeSentiment={
+                    sentimentFilter === "all" ? "all" : (sentimentFilter as any)
+                  }
+                  query={q}
+                  onPickCategory={(c) => {
+                    handleCategoryChange(c);
+                    setShowTrending(false);
+                  }}
+                  onPickSentiment={(s) => {
+                    setSentimentFilter(s);
+                    setShowTrending(false);
+                  }}
+                  onQuery={(qv) => {
+                    setQ(qv);
+                    setShowTrending(false);
+                  }}
+                  onClose={() => setShowTrending(false)}
+                />
+              </div>
+            </div> */}
+            <div className="d-lg-none">
   <div
-    id="tp-mobile"                    // <-- new id
-    hidden={!showTrending}            // <-- native toggle, no Bootstrap JS needed
+    id="tp-mobile"
+    ref={mobilePanelRef}
+    hidden={!showTrending}          // keep native toggle
+    tabIndex={-1}                   // allow programmatic focus
+    role="region"
+    aria-label="Trending panel"
   >
     <TrendingPanel
       items={filtered}
@@ -284,49 +367,34 @@ export const HomePage = () => {
     />
   </div>
 </div>
-
-            {/* <div id="trending-panel-mobile" className={`d-lg-none ${showTrending ? "" : "d-none"}`}>
-              <TrendingPanel
-                items={filtered}
-                bookmarksCount={bookmarks.size}
-                activeCategory={categoryFilter === "all" ? "all" : (categoryFilter as string)}
-                activeSentiment={sentimentFilter === "all" ? "all" : (sentimentFilter as Sentiment)}
-                query={q}
-                onPickCategory={(c) => { handleCategoryChange(c); setShowTrending(false); }}
-                onPickSentiment={(s) => { setSentimentFilter(s); setShowTrending(false); }}
-                onQuery={(qv) => { setQ(qv); setShowTrending(false); }}
-                onClose={() => setShowTrending(false)}
-              />
-            </div> */}
           </div>
         </div>
       </main>
       <FloatingBot
-            title="News Assistant"
-            accent="#22c55e"
-            welcome="Hey! 👋 Need a hand?"
-            suggestions={["Our services", "Get a quote", "Support"]}
-            onSend={async (text, addBot) => {
-              try {
-                const resp = await fetch("http://localhost:8788/api/chat", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    prompt: text,
-                    
-                    history: [
-                      { role: "system", content: "You are Trend News Assistant." },
-                      
-                    ],
-                  }),
-                });
-                const data = await resp.json();
-                addBot(data.reply || "Sorry, I couldn’t come up with an answer.");
-              } catch (e) {
-                addBot("Network error. Try again in a moment.");
-              }
-            }}
-          />
+        title="News Assistant"
+        accent="#22c55e"
+        welcome="Hey! 👋 Need a hand?"
+        suggestions={["Our services", "Get a quote", "Support"]}
+        onSend={async (text, addBot) => {
+          try {
+            const resp = await fetch("http://localhost:8788/api/chat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                prompt: text,
+
+                history: [
+                  { role: "system", content: "You are Trend News Assistant." },
+                ],
+              }),
+            });
+            const data = await resp.json();
+            addBot(data.reply || "Sorry, I couldn’t come up with an answer.");
+          } catch (e) {
+            addBot("Network error. Try again in a moment.");
+          }
+        }}
+      />
     </>
   );
 };
