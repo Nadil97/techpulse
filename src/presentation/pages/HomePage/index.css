@@ -98,7 +98,14 @@
     display: none;
   }
 }
+/* Force the mobile panel to actually show/hide regardless of other rules */
+#trending-panel-mobile[hidden] { display: none !important; }
+#trending-panel-mobile:not([hidden]) { display: block !important; }
 
+/* Ensure the panel isn't sticky on mobile (some themes keep it sticky) */
+@media (max-width: 991.98px) {
+  .trending-panel { position: static !important; top: 0 !important; }
+}
 @media (min-width: 577px) and (max-width: 768px) {
   .bookmark-toggle .label {
     display: inline;

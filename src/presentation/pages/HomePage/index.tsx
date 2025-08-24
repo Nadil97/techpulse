@@ -32,7 +32,8 @@ export const HomePage = () => {
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("all");
   const [sentimentFilter, setSentimentFilter] = useState<SentimentFilter>("all");
   const [showTrending, setShowTrending] = useState(false); 
-
+ console.log("clicked",showTrending);
+ console.log("clicked1",onlyBookmarks);
   const { bookmarks } = useBookmarks();
 
   useEffect(() => {
@@ -148,6 +149,8 @@ export const HomePage = () => {
           <div className="controls-bar d-flex align-items-center gap-2">
             {/* Trending panel mobile toggle */}
             <button
+            
+            
               type="button"
               className="btn btn-sm btn-outline-secondary d-lg-none"
               onClick={() => setShowTrending((v) => !v)}
@@ -241,7 +244,7 @@ export const HomePage = () => {
             {/* Desktop/tablet */}
             <div className="d-none d-lg-block">
               <TrendingPanel
-                items={filtered} // use filtered dataset for relevance
+                items={filtered} 
                 bookmarksCount={bookmarks.size}
                 activeCategory={categoryFilter === "all" ? "all" : (categoryFilter as string)}
                 activeSentiment={sentimentFilter === "all" ? "all" : (sentimentFilter as Sentiment)}
@@ -253,7 +256,27 @@ export const HomePage = () => {
             </div>
 
             {/* Mobile collapsible */}
-            <div id="trending-panel-mobile" className={`d-lg-none ${showTrending ? "" : "d-none"}`}>
+            {/* Mobile collapsible */}
+<div className="d-lg-none">
+  <div
+    id="trending-panel-mobile"
+    className={`collapse ${showTrending ? "show" : ""}`}
+  >
+    <TrendingPanel
+      items={filtered}
+      bookmarksCount={bookmarks.size}
+      activeCategory={categoryFilter === "all" ? "all" : (categoryFilter as string)}
+      activeSentiment={sentimentFilter === "all" ? "all" : (sentimentFilter as any)}
+      query={q}
+      onPickCategory={(c) => { handleCategoryChange(c); setShowTrending(false); }}
+      onPickSentiment={(s) => { setSentimentFilter(s); setShowTrending(false); }}
+      onQuery={(qv) => { setQ(qv); setShowTrending(false); }}
+      onClose={() => setShowTrending(false)}
+    />
+  </div>
+</div>
+
+            {/* <div id="trending-panel-mobile" className={`d-lg-none ${showTrending ? "" : "d-none"}`}>
               <TrendingPanel
                 items={filtered}
                 bookmarksCount={bookmarks.size}
@@ -265,7 +288,7 @@ export const HomePage = () => {
                 onQuery={(qv) => { setQ(qv); setShowTrending(false); }}
                 onClose={() => setShowTrending(false)}
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </main>
