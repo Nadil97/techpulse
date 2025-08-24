@@ -1,0 +1,112 @@
+/* ====== Theme-aware shadow tokens ====== */
+:root {
+  --card-shadow-rest: 0 1px 2px rgba(0,0,0,.08), 0 4px 10px rgba(0,0,0,.06);
+  --card-shadow-hover: 0 8px 24px rgba(0,0,0,.14), 0 16px 36px rgba(0,0,0,.10);
+  --card-shadow-tilt: 0 14px 40px rgba(0,0,0,.18), 0 24px 50px rgba(0,0,0,.12);
+  --card-border: var(--bs-border-color, rgba(0,0,0,.08));
+  --card-accent: rgba(0,0,0,.12);
+}
+
+[data-bs-theme="dark"] {
+  /* gray-ish shadows for dark mode */
+  --card-shadow-rest: 0 2px 6px rgba(128,128,128,.12), 0 8px 18px rgba(128,128,128,.10);
+  --card-shadow-hover: 0 10px 26px rgba(128,128,128,.18), 0 18px 42px rgba(128,128,128,.16);
+  --card-shadow-tilt: 0 16px 44px rgba(128,128,128,.24), 0 28px 60px rgba(128,128,128,.22);
+  --card-border: rgba(255,255,255,.10);
+  --card-accent: rgba(160,160,160,.45); /* hover/selection border */
+}
+
+/* ====== Equal height grid ====== */
+.row.g-3 > [class*="col-"] { display: flex; }
+.row.g-3 > [class*="col-"] > .news-tilt { display: flex; width: 100%; }
+
+/* 3D tilt wrapper provides perspective */
+.news-tilt {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Interactive card surface */
+.news-tilt__inner {
+  position: relative;
+  background: var(--bs-card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow-rest);
+  will-change: transform;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Subtle animated border on hover/selection */
+.news-tilt__inner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid transparent;
+  transition: border-color 180ms ease;
+  pointer-events: none;
+}
+.news-tilt:hover .news-tilt__inner::after,
+.news-tilt:focus-within .news-tilt__inner::after {
+  border-color: var(--card-accent);
+}
+
+/* Body fills remaining space so all cards equalize */
+.news-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+/* Bookmark button */
+.news-bookmark-btn{
+  position:absolute; top:.5rem; right:.5rem; z-index:2;
+  width:34px; height:34px; border-radius:10px;
+  border:1px solid var(--bs-border-color, rgba(0,0,0,.08));
+  background: color-mix(in oklab, var(--bs-body-bg) 85%, transparent);
+  -webkit-backdrop-filter: blur(6px) saturate(160%);
+  backdrop-filter: blur(6px) saturate(160%);
+  display:inline-flex; align-items:center; justify-content:center;
+  color: var(--bs-secondary-color, #6c757d);
+  transition: transform .16s ease, box-shadow .16s ease, color .16s ease, border-color .16s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
+.news-bookmark-btn:hover{ transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.14); }
+.news-bookmark-btn.is-active{
+  color:#E0A200;
+  border-color: color-mix(in oklab, #E0A200 50%, transparent);
+  box-shadow: 0 10px 26px rgba(224,162,0,.24);
+}
+
+/* (Keep your existing tilt styles here) */
+
+/* Clamp title lines for consistent height */
+.news-tilt__inner .card-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3; /* 3 lines */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Touch devices fallback hover */
+@media (hover: none), (pointer: coarse) {
+  .news-tilt__inner {
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+  .news-tilt:active .news-tilt__inner,
+  .news-tilt:focus-within .news-tilt__inner {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--card-shadow-hover);
+  }
+}
+
+/* Respect reduced motion prefs */
+@media (prefers-reduced-motion: reduce) {
+  .news-tilt__inner {
+    transition: none !important;
+    transform: none !important;
+    box-shadow: var(--card-shadow-rest) !important;
+  }
+}
