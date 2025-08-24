@@ -148,9 +148,7 @@ export const HomePage = () => {
 
           <div className="controls-bar d-flex align-items-center gap-2">
             {/* Trending panel mobile toggle */}
-            <button
-            
-            
+            {/* <button
               type="button"
               className="btn btn-sm btn-outline-secondary d-lg-none"
               onClick={() => setShowTrending((v) => !v)}
@@ -159,7 +157,18 @@ export const HomePage = () => {
               title="Toggle trending panel"
             >
               <i className="fa-solid fa-chart-line me-1" /> Trending
-            </button>
+            </button> */}
+ <button
+  type="button"
+  className="btn btn-sm btn-outline-secondary d-lg-none"
+  onClick={() => setShowTrending(v => !v)}
+  aria-expanded={showTrending}
+  aria-controls="tp-mobile"           
+  title="Toggle trending panel"
+>
+  <i className="fa-solid fa-chart-line me-1" /> Trending
+</button>
+
 
             {/* Time filter */}
             <select
@@ -259,8 +268,8 @@ export const HomePage = () => {
             {/* Mobile collapsible */}
 <div className="d-lg-none">
   <div
-    id="trending-panel-mobile"
-    className={`collapse ${showTrending ? "show" : ""}`}
+    id="tp-mobile"                    // <-- new id
+    hidden={!showTrending}            // <-- native toggle, no Bootstrap JS needed
   >
     <TrendingPanel
       items={filtered}
